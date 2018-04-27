@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
+#include "Engine/StaticMeshActor.h"
 #include "ArmActorComponent.generated.h"
 
 #define print(text) if (GEngine) GEngine->AddOnScreenDebugMessage(-1, .0f, FColor::Red,text)
@@ -26,5 +27,17 @@ public:
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
 	float RunningTime;
+
+	UPROPERTY(EditAnywhere, Category="Damage")
+	int32 TotalDamage;
+
+
+
+	UPROPERTY(EditAnywhere, Category="Joints")
+	AStaticMeshActor* AA;
+
+
+	UPROPERTY(EditAnywhere)
+	TArray<AStaticMeshActor*> Joints;
 
 };

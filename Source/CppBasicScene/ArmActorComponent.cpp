@@ -2,7 +2,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "ArmActorComponent.h"
-
+#include "EngineUtils.h"
 
 // Sets default values for this component's properties
 UArmActorComponent::UArmActorComponent() {
@@ -20,7 +20,8 @@ void UArmActorComponent::BeginPlay() {
 
   AActor *joint1 = FindObject<AActor>(nullptr, TEXT("joint1"));
 
-  UE_LOG(LogTemp, Warning, TEXT("Joint1 is %s"), joint1 ? TEXT("True") : TEXT("False"));
+  UE_LOG(LogTemp, Warning, TEXT("Joint1 is %s"),
+         joint1 ? TEXT("True") : TEXT("False"));
   // ...
   // GameObject mygo = GameObject.find("Arm2");
 }
@@ -34,31 +35,65 @@ void UArmActorComponent::TickComponent(
   // ...
   AActor *parentActor = this->GetOwner();
 
-  FVector newLocation = parentActor->GetActorLocation();
-  float DeltaHeight =
+  	float DeltaHeight =
       (FMath::Sin(RunningTime + DeltaTime) - FMath::Sin(RunningTime));
-  newLocation.Z += DeltaHeight * 20.0f;
-  RunningTime += DeltaTime;
+	RunningTime += DeltaTime;
 
-  parentActor->SetActorLocation(newLocation);
+//   FVector newLocation = parentActor->GetActorLocation();
+//   newLocation.Z += DeltaHeight * 20.0f;
+//   parentActor->SetActorLocation(newLocation);
 
   auto msg = GEngine == nullptr ? "true" : "false";
-  FString DebugMsg = FString::Printf(TEXT("GEngine : %s"), *FString::SanitizeFloat(124.5f));
-
+  FString DebugMsg =
+      FString::Printf(TEXT("GEngine : %s"), *FString::SanitizeFloat(124.5f));
 
   if (GEngine)
-	  GEngine->AddOnScreenDebugMessage(INDEX_NONE, 0.0f, FColor::Green, TEXT("joint1"));
+    GEngine->AddOnScreenDebugMessage(INDEX_NONE, 0.0f, FColor::Green,
+                                     TEXT("joint1"));
 
   // Find Actor by name (also works on UObjects)
-  //auto parent = GetOwner()->GetRootComponent()->GetAttachParent();
+  // auto parent = GetOwner()->GetRootComponent()->GetAttachParent();
+
+  // EngineUtils.h
+
+  auto ActorItr = TActorIterator<AStaticMeshActor>(GetWorld());
+
+  const FString JointName = FString("Joint");
+
+  // While not reached end (overloaded bool operator)
+  // while (ActorItr)
+  // {
+  // 	print(ActorItr->GetName());
+
+  // 	print(ActorItr->GetActorLocation().ToString());
+
+  // 	//next actor
+  // 	++ActorItr;
+  // }
+  FRotator newRotation;
   
-  auto *joint1 = FindObject<AActor>(GetWorld(), TEXT("Joint1"));
-  UE_LOG(LogTemp, Warning, TEXT("Joint1 is %s"), joint1 ? TEXT("True") : TEXT("False"));
+  newRotation = Joints[0]->GetActorRotation();
+  newRotation.Yaw += DeltaHeight * 20.0f;
+  Joints[0]->SetActorRotation(newRotation);
+
+  newRotation = Joints[1]->GetActorRotation();
+  newRotation.Roll += DeltaHeight * 20.0f;
+  Joints[1]->SetActorRotation(newRotation);
+
+  newRotation = Joints[3]->GetActorRotation();
+  newRotation.Roll += DeltaHeight * 50.0f;
+  Joints[3]->SetActorRotation(newRotation);
+
+  
+
+  // auto* joint1 = FindObject<AStaticMeshActor>(nullptr, TEXT("Joint1"));
+  // UE_LOG(LogTemp, Warning, TEXT("Joint1 is %d"), joint1);// ? TEXT("True") :
+  // TEXT("False"));
 
   return;
 
-  FRotator newRotation = joint1->GetActorRotation();
+  // FRotator newRotation = joint1->GetActorRotation();
 
-  newRotation.Yaw += DeltaHeight;
-  joint1->SetActorRotation(newRotation);
+  // newRotation.Yaw += DeltaHeight;
+  // joint1->SetActorRotation(newRotation);
 }
