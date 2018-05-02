@@ -86,3 +86,4 @@ Plugins/*/Binaries/*
 
 WindowsNoEditor/
 Content/StarterContent/
+.vscode/
