@@ -8,13 +8,32 @@ ASocketActor::ASocketActor()
 {
 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
+}
 
-	Root = CreateDefaultSubobject<USceneComponent>(TEXT("SocketRoot"));
-	RootComponent = Root;
+ASocketActor::~ASocketActor()
+{
+	CloseSocket();
+}
 
-	PickupMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("PickupMesh"));
-	PickupMesh->AttachToComponent(Root, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
+void ASocketActor::CloseSocket()
+{
+	Print("Close");
 
+	if (!ListenerSocket)
+	{
+		ListenerSocket->Close();
+		delete ListenerSocket;
+
+		Print("Close");
+	}
+
+	if (!ConnectionSocket)
+	{
+		ConnectionSocket->Close();
+		delete ConnectionSocket;
+
+		Print("Close");
+	}
 }
 
 // Called when the game starts or when spawned
@@ -22,11 +41,22 @@ void ASocketActor::BeginPlay()
 {
 	Super::BeginPlay();
 
-	if (!StartTCPReceiver("RamaSocketListener", "127.0.0.1", 8890))
+	Root = CreateDefaultSubobject<USceneComponent>(TEXT("SocketRoot"));
+	RootComponent = Root;
+
+	PickupMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("PickupMesh"));
+	PickupMesh->AttachToComponent(Root, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
+
+	if (!StartTCPReceiver("RamaSocketListener", "127.0.0.1", 5006))
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Socket Listener Created!"));
 		return;
 	}
+}
+
+void ASocketActor::Destroyed()
+{
+	CloseSocket();
 }
 
 // Called every frame
@@ -36,37 +66,42 @@ void ASocketActor::Tick(float DeltaTime)
 
 }
 
-bool ASocketActor::StartTCPReceiver(const FString &yourChosenSocketName, const FString &theIp, const int32 ThePort)
+bool ASocketActor::StartTCPReceiver(const FString &yourChosenSocketName, const FString &theIp, const int32 thePort)
 {
-	ListenerSocket = CreateTCPConnectionListener(yourChosenSocketName, theIp, ThePort);
+	ListenerSocket = CreateListenerSocket(yourChosenSocketName, theIp, thePort);
 
 	if (!ListenerSocket)
 	{
-		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, FString::Printf(TEXT("StartTCPReceiver>>Listen socket could not be created! ~> %s %d"), *theIp, ThePort));
+		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, FString::Printf(TEXT("StartTCPReceiver>>Listen socket could not be created! ~> %s %d"), *theIp, thePort));
 		return false;
 	}
 
-	LogSocket("Start Listen!");
-
-	GetWorldTimerManager().SetTimer(_memberTimerHandle, this, &ASocketActor::TCPConnectionListener, .01, true);
+	Print("Start Listen!");
+	
+	GetWorldTimerManager().SetTimer(_listenerTimerHandle, this, &ASocketActor::CheckConnection, .01, true);
 
 	return true;
 }
 
-FSocket* ASocketActor::CreateTCPConnectionListener(const FString &YourChosenSocketName, const FString &TheIP, const int32 ThePort, const int32 receiveBufferSize /*= 2 * 1024 * 1024*/)
+FSocket* ASocketActor::CreateListenerSocket(const FString &yourChosenSocketName, const FString &theIP, const int32 thePort, const int32 receiveBufferSize /*= 2 * 1024 * 1024*/)
 {
 	uint8 ip4Nums[4];
 
-	if (!FormatIP4ToNumber(TheIP, ip4Nums))
+	if (!FormatIP4ToNumber(theIP, ip4Nums))
 	{
-		VShow("Invalid IP!");
+		Print("Invalid IP!");
 		return nullptr;
 	}
 
 	// Create Socket
-	FIPv4Endpoint Endpoint(FIPv4Address(ip4Nums[0], ip4Nums[1], ip4Nums[2], ip4Nums[3]), ThePort);
-	FSocket* listenSocket = FTcpSocketBuilder(*YourChosenSocketName).AsReusable().BoundToEndpoint(Endpoint).Listening(8);
+	FIPv4Endpoint Endpoint(FIPv4Address(ip4Nums[0], ip4Nums[1], ip4Nums[2], ip4Nums[3]), thePort);
+	FSocket* listenSocket = 
+		FTcpSocketBuilder(*yourChosenSocketName)
+		.AsReusable()
+		.BoundToEndpoint(Endpoint)
+		.Listening(8);
 
+	Print(listenSocket->GetPortNo() == thePort ? "Yes" : "No");
 	// Set Buffer Size
 	int32 newSize = 0;
 	listenSocket->SetReceiveBufferSize(receiveBufferSize, newSize);
@@ -74,21 +109,28 @@ FSocket* ASocketActor::CreateTCPConnectionListener(const FString &YourChosenSock
 	return listenSocket;
 }
 
-void ASocketActor::TCPConnectionListener()
+void ASocketActor::CheckConnection()
 {
 	if (!ListenerSocket) return;
 
+	//LogSocket(TEXT("Listening"));
+
 	//Remote address
-	TSharedRef<FInternetAddr> remoteAddress = ISocketSubsystem::Get(PLATFORM_SOCKETSUBSYSTEM)->CreateInternetAddr();
 
 	bool pending;
-
+	
 	// handle incoming connection
 	if (ListenerSocket->HasPendingConnection(pending) && pending)
 	{
+		TSharedRef<FInternetAddr> remoteAddress = ISocketSubsystem::Get(PLATFORM_SOCKETSUBSYSTEM)->CreateInternetAddr();
+
+		Print("Connection Coming!");
+
 		// Already have a connection? destroy previous
 		if (ConnectionSocket)
 		{
+			Print("Destroy current socket!");
+
 			ConnectionSocket->Close();
 			ISocketSubsystem::Get(PLATFORM_SOCKETSUBSYSTEM)->DestroySocket(ConnectionSocket);
 		}
@@ -101,14 +143,16 @@ void ASocketActor::TCPConnectionListener()
 			//Global cache of current remote address
 			RemoteAddressForConnection = FIPv4Endpoint(remoteAddress);
 
-			VShow("Accepted Connection! WHOOHO!!!");
+			Print("Accepted Connection! WHOOHO!!!");
 
-			GetWorldTimerManager().SetTimer(_memberTimerHandle, this, &ASocketActor::TCPSocketListener, .01, true);
+			GetWorldTimerManager().SetTimer(_receivedTimerHandle, this, &ASocketActor::CheckReceivedData, .01, true);
 		}
 	}
+
+	VShow(FString::Printf(TEXT("%d"), pending));
 }
 
-void ASocketActor::TCPSocketListener()
+void ASocketActor::CheckReceivedData()
 {
 	if (!ConnectionSocket) return;
 

@@ -7,9 +7,9 @@
 #include "Networking.h"
 #include "SocketActor.generated.h"
 
-DEFINE_LOG_CATEGORY_STATIC(LogSocketFlag, Warning, All);
-#define VShow(text) if (GEngine) GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red,text)
-#define LogSocket(text) UE_LOG(LogSocketFlag, Warning, text)
+DEFINE_LOG_CATEGORY_STATIC(LogSocketCategory, Warning, All);
+#define VShow(text) if (GEngine) GEngine->AddOnScreenDebugMessage(-1, .0f, FColor::Red,text)
+#define LogSocket(text) UE_LOG(LogSocketCategory, Warning, text)
 
 UCLASS()
 class CPPBASICSCENE_API ASocketActor : public AActor
@@ -19,10 +19,13 @@ class CPPBASICSCENE_API ASocketActor : public AActor
 public:
 	// Sets default values for this actor's properties
 	ASocketActor();
+	virtual ~ASocketActor() override;
 
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
+
+	virtual void Destroyed() override;
 
 public:
 	// Called every frame
@@ -48,13 +51,13 @@ public:
 		const FString &TheIp, const int32 ThePort);
 
 	FSocket*
-		CreateTCPConnectionListener(const FString &YourChosenSocketName,
+		CreateListenerSocket(const FString &YourChosenSocketName,
 			const FString &TheIP, const int32 ThePort,
 			const int32 receiveBufferSize = 2 * 1024 * 1024);
 
 	//Timer functions, could be threads
-	void TCPConnectionListener();	//can thread this eventually
-	void TCPSocketListener();	//can thread this eventually
+	void CheckConnection();	//can thread this eventually
+	void CheckReceivedData();	//can thread this eventually
 
 	//Format String IP4 to number array
 	bool FormatIP4ToNumber(const FString& theIP, uint8(&Out)[4]);
@@ -62,12 +65,18 @@ public:
 	//Rama's StringFromBinaryArray
 	const FString StringFromBinaryArray(TArray<uint8>& binaryArray);
 
-	FTimerHandle _memberTimerHandle;
+private:
+
+	FTimerHandle _listenerTimerHandle;
+	FTimerHandle _receivedTimerHandle;
+
 
 	inline void Print(const FString& text) {
 		if (GEngine) 
 			GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, text); 
 
-		UE_LOG(LogSocket, Warning, TEXT("%s"), text);
+		UE_LOG(LogSocketCategory, Warning, TEXT("%s"), *text);
 	}
+
+	void CloseSocket();
 };
