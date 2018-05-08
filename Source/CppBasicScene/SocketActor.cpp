@@ -19,7 +19,7 @@ void ASocketActor::CloseSocket()
 {
 	Print("Close");
 
-	if (!ListenerSocket)
+	if (ListenerSocket != nullptr)
 	{
 		ListenerSocket->Close();
 		delete ListenerSocket;
@@ -27,7 +27,7 @@ void ASocketActor::CloseSocket()
 		Print("Close");
 	}
 
-	if (!ConnectionSocket)
+	if (ConnectionSocket != nullptr)
 	{
 		ConnectionSocket->Close();
 		delete ConnectionSocket;
@@ -41,11 +41,12 @@ void ASocketActor::BeginPlay()
 {
 	Super::BeginPlay();
 
-	Root = CreateDefaultSubobject<USceneComponent>(TEXT("SocketRoot"));
-	RootComponent = Root;
 
-	PickupMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("PickupMesh"));
-	PickupMesh->AttachToComponent(Root, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
+	//Root = CreateDefaultSubobject<USceneComponent>(TEXT("SocketRoot"));
+	//RootComponent = Root;
+
+	//PickupMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("PickupMesh"));
+	//PickupMesh->AttachToComponent(Root, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
 
 	if (!StartTCPReceiver("RamaSocketListener", "127.0.0.1", 5006))
 	{
@@ -72,13 +73,13 @@ bool ASocketActor::StartTCPReceiver(const FString &yourChosenSocketName, const F
 
 	if (!ListenerSocket)
 	{
-		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, FString::Printf(TEXT("StartTCPReceiver>>Listen socket could not be created! ~> %s %d"), *theIp, thePort));
+		ScreenPrint(FString::Printf(TEXT("StartTCPReceiver>>Listen socket could not be created! ~> %s %d"), *theIp, thePort));
 		return false;
 	}
 
 	Print("Start Listen!");
 	
-	GetWorldTimerManager().SetTimer(_listenerTimerHandle, this, &ASocketActor::CheckConnection, .01, true);
+	GetWorldTimerManager().SetTimer(_listenerTimerHandle, this, &ASocketActor::Accept, .01, true);
 
 	return true;
 }
@@ -109,7 +110,7 @@ FSocket* ASocketActor::CreateListenerSocket(const FString &yourChosenSocketName,
 	return listenSocket;
 }
 
-void ASocketActor::CheckConnection()
+void ASocketActor::Accept()
 {
 	if (!ListenerSocket) return;
 
@@ -122,6 +123,7 @@ void ASocketActor::CheckConnection()
 	// handle incoming connection
 	if (ListenerSocket->HasPendingConnection(pending) && pending)
 	{
+		
 		TSharedRef<FInternetAddr> remoteAddress = ISocketSubsystem::Get(PLATFORM_SOCKETSUBSYSTEM)->CreateInternetAddr();
 
 		Print("Connection Coming!");
@@ -145,14 +147,14 @@ void ASocketActor::CheckConnection()
 
 			Print("Accepted Connection! WHOOHO!!!");
 
-			GetWorldTimerManager().SetTimer(_receivedTimerHandle, this, &ASocketActor::CheckReceivedData, .01, true);
+			GetWorldTimerManager().SetTimer(_receivedTimerHandle, this, &ASocketActor::Read, .01, true);
 		}
 	}
 
-	VShow(FString::Printf(TEXT("%d"), pending));
+	//ScreenPrint(FString::Printf(TEXT("%d"), pending));
 }
 
-void ASocketActor::CheckReceivedData()
+void ASocketActor::Read()
 {
 	if (!ConnectionSocket) return;
 
@@ -173,11 +175,11 @@ void ASocketActor::CheckReceivedData()
 	if (receivedData.Num() <= 0)
 		return;
 
-	VShow(FString::Printf(TEXT("Total Data read! %d"), receivedData.Num()).GetCharArray().GetData());
+	ScreenPrint(FString::Printf(TEXT("Total Data read! %d"), receivedData.Num()).GetCharArray().GetData());
 
 	const FString receivedUE4String = StringFromBinaryArray(receivedData);
 	auto p = TEXT("As String!!! ~>") + receivedUE4String;
-	VShow(p.GetCharArray().GetData());
+	ScreenPrint(p.GetCharArray().GetData());
 }
 
 bool ASocketActor::FormatIP4ToNumber(const FString& theIP, uint8(&Out)[4])

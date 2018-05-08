@@ -5,10 +5,11 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "Networking.h"
+#include "NetworkMessage.h"
 #include "SocketActor.generated.h"
 
 DEFINE_LOG_CATEGORY_STATIC(LogSocketCategory, Warning, All);
-#define VShow(text) if (GEngine) GEngine->AddOnScreenDebugMessage(-1, .0f, FColor::Red,text)
+#define ScreenPrint(text) if (GEngine) GEngine->AddOnScreenDebugMessage(-1, .0f, FColor::Red,text)
 #define LogSocket(text) UE_LOG(LogSocketCategory, Warning, text)
 
 UCLASS()
@@ -56,8 +57,8 @@ public:
 			const int32 receiveBufferSize = 2 * 1024 * 1024);
 
 	//Timer functions, could be threads
-	void CheckConnection();	//can thread this eventually
-	void CheckReceivedData();	//can thread this eventually
+	void Accept();	//can thread this eventually
+	void Read();	//can thread this eventually
 
 	//Format String IP4 to number array
 	bool FormatIP4ToNumber(const FString& theIP, uint8(&Out)[4]);
