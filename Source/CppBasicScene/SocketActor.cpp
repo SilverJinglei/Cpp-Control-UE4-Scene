@@ -41,14 +41,13 @@ void ASocketActor::BeginPlay()
 {
 	Super::BeginPlay();
 
-
 	//Root = CreateDefaultSubobject<USceneComponent>(TEXT("SocketRoot"));
 	//RootComponent = Root;
 
 	//PickupMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("PickupMesh"));
 	//PickupMesh->AttachToComponent(Root, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
 
-	if (!StartTCPReceiver("RamaSocketListener", "127.0.0.1", 5006))
+	if (!StartTCPReceiver("RamaSocketListener", "127.0.0.1", 30001))
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Socket Listener Created!"));
 		return;
@@ -101,8 +100,8 @@ FSocket* ASocketActor::CreateListenerSocket(const FString &yourChosenSocketName,
 		.AsReusable()
 		.BoundToEndpoint(Endpoint)
 		.Listening(8);
-
-	Print(listenSocket->GetPortNo() == thePort ? "Yes" : "No");
+	
+	listenSocket->SetRecvErr(true);
 	// Set Buffer Size
 	int32 newSize = 0;
 	listenSocket->SetReceiveBufferSize(receiveBufferSize, newSize);
@@ -117,6 +116,10 @@ void ASocketActor::Accept()
 	//LogSocket(TEXT("Listening"));
 
 	//Remote address
+
+	auto ss = ISocketSubsystem::Get(PLATFORM_SOCKETSUBSYSTEM);
+	if(ss->GetLastErrorCode() != SE_NO_ERROR)
+		ScreenPrint(ss->GetSocketError(ss->GetLastErrorCode()));
 
 	bool pending;
 	
@@ -146,7 +149,7 @@ void ASocketActor::Accept()
 			RemoteAddressForConnection = FIPv4Endpoint(remoteAddress);
 
 			Print("Accepted Connection! WHOOHO!!!");
-
+			
 			GetWorldTimerManager().SetTimer(_receivedTimerHandle, this, &ASocketActor::Read, .01, true);
 		}
 	}
