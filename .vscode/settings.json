@@ -1,7 +1,0 @@
-{
-	"files.exclude": {
-		"d:/Unreal Projects/CppBasicScene/.vscode": true,
-		"d:/Unreal Projects/CppBasicScene/Content": true,
-		"d:/Unreal Projects/CppBasicScene/Intermediate": true
-	}
-}
