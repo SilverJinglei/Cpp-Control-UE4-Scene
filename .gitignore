@@ -51,11 +51,8 @@
 */SourceArt/**/*.png
 */SourceArt/**/*.tga
 
-# Binary Files
-*/Binaries/*
-
 # Builds
-*/Build/*
+Build
 
 # Whitelist PakBlacklist-<BuildConfiguration>.txt files
 !Build/*/
@@ -72,18 +69,15 @@ Build/*/**
 */Saved/*
 
 # Compiled source files for the engine to use
-Intermediate/*
+Intermediate
+Binaries
+Debug
+StarterContent
+WindowsNoEditor
 
 # Cache files for the editor to use
 */DerivedDataCache/*
 
-# Plugin Intermediate and Binary folders
-*/Intermediate/*
-*/Binaries/*
 
 
 # End of https://www.gitignore.io/api/unrealengine
-
-*/WindowsNoEditor/
-*/Content/StarterContent/
-*/.vscode/

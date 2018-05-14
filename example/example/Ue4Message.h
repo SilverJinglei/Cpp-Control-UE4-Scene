@@ -8,8 +8,9 @@ class chat_message
 {
 public:
 
-	enum { magic_length = 8 }; // uint32 8 size
-	enum { header_length = 12 };
+	enum { magic_length = 4 }; // uint32 8 size
+	enum { payload_length = 4 };
+	enum { header_length = 8 };
 	enum { max_body_length = 512 };
 
 	chat_message()
@@ -57,12 +58,14 @@ public:
 	bool decode_header()
 	{
 		char magic[magic_length + 1] = "";
+		auto size = sizeof(Magic);
 		strncat(magic, data_, magic_length);
-		//assert(atoi(magic) == DefaultMagic);
+		//uint32_t* m1 = (uint32_t*)magic;
+		assert(Parse<uint32_t>(magic) == DefaultMagic);
 
-		char header[header_length + 1] = "";
-		strncat(header, data_, header_length - magic_length);
-		body_length_ = atoi(header);
+		char payloadSize[payload_length + 1] = "";
+		strncat(payloadSize, data_ + magic_length, payload_length);
+		body_length_ = Parse<uint32_t>(payloadSize);
 		
 		if (body_length_ > max_body_length)
 		{
@@ -82,6 +85,26 @@ public:
 		char header[header_length - magic_length + 1] = "";
 		sprintf_s(header, "%4d", static_cast<int>(body_length_));
 		memcpy(data_ + magic_length, header, header_length - magic_length);
+	}
+
+	uint32_t toUint(char(&buffer)[4], size_t x)
+	{
+		auto i = *reinterpret_cast<unsigned int *>(buffer + x);
+
+		i =  *reinterpret_cast<unsigned int *>(&buffer[x]);
+	}
+
+	void SerializeInt32(char(&buf)[4], int32_t val)
+	{
+		std::memcpy(buf, &val, 4);
+	}
+
+	template<typename T>
+	T Parse(const char(&buf)[5])
+	{
+		T val;
+		std::memcpy(&val, buf, 4);
+		return val;
 	}
 
 	static uint32_t DefaultMagic;

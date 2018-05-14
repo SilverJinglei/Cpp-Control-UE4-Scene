@@ -133,12 +133,13 @@ int main(int argc, char* argv[])
 		//	std::cerr << "Usage: chat_client <host> <port>\n";
 		//	return 1;
 		//}
-		char magic[chat_message::magic_length + 1] = "";
-		sprintf(magic, "%4d", 0x1E2B83C1);
-		sprintf(magic, "%16x", 0x9E2B83C1);
-		sprintf(magic, "%08x", 0x9E2B83C1);
-		//auto aa = boost::lexical_cast<std::u32string>(0x9E2B83C1).size();
-		sprintf(magic, "%08x", chat_message::DefaultMagic);
+
+		//char magic[chat_message::magic_length + 1] = "";
+		//sprintf(magic, "%4d", 0x1E2B83C1);
+		//sprintf(magic, "%16x", 0x9E2B83C1);
+		//sprintf(magic, "%08x", 0x9E2B83C1);
+		////auto aa = boost::lexical_cast<std::u32string>(0x9E2B83C1).size();
+		//sprintf(magic, "%08x", chat_message::DefaultMagic);
 
 
 		boost::asio::io_context io_context;

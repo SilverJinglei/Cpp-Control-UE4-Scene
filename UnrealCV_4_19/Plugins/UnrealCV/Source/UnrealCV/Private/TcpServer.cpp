@@ -190,6 +190,13 @@ bool UNetworkManager::StartEchoService(FSocket* ClientSocket, const FIPv4Endpoin
 		// ClientSocket->SetNonBlocking(false); // When this in blocking state, I can not use this socket to send message back
 		ConnectionSocket = ClientSocket;
 
+
+		FString Confirm = FString::Printf(TEXT("connected to %s"), *GetProjectName());
+		bool IsSent = this->SendMessage(Confirm); // Send a hello message
+
+
+		UE_LOG(LogUnrealCV, Error, TEXT("Good to send welcome message to client."));
+
 		// Listening data here or start a new thread for data?
 		// Reuse the TCP Listener thread for getting data, only support one connection
 		uint32 BufferSize = 1024;
@@ -274,7 +281,7 @@ bool UNetworkManager::Connected(FSocket* ClientSocket, const FIPv4Endpoint& Clie
 	bool ServiceStatus = false;
 	BroadcastConnected(*ClientEndpoint.ToString());
 	ServiceStatus = StartEchoService(ClientSocket, ClientEndpoint);
-	ServiceStatus = StartMessageService(ClientSocket, ClientEndpoint);
+	//ServiceStatus = StartMessageService(ClientSocket, ClientEndpoint);
 	return ServiceStatus;
 	// This is a blocking service, if need to support multiple connections, consider start a new thread here.
 }
@@ -343,9 +350,9 @@ bool UNetworkManager::SendMessage(const FString& Message)
 	{
 		TArray<uint8> Payload;
 		BinaryArrayFromString(Message, Payload);
-		UE_LOG(LogUnrealCV, Verbose, TEXT("Send string message with size %d"), Payload.Num());
+		UE_LOG(LogUnrealCV, Log, TEXT("Send string message with size %d"), Payload.Num());
 		FSocketMessageHeader::WrapAndSendPayload(Payload, ConnectionSocket);
-		UE_LOG(LogUnrealCV, Verbose, TEXT("Payload sent"), Payload.Num());
+		UE_LOG(LogUnrealCV, Log, TEXT("Payload sent"), Payload.Num());
 		return true;
 	}
 	return false;
