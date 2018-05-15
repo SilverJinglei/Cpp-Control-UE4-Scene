@@ -10,7 +10,7 @@ public:
 
 	enum { magic_length = 4 }; // uint32 8 size
 	enum { payload_length = 4 };
-	enum { header_length = 8 };
+	enum { header_length = magic_length + payload_length };
 	enum { max_body_length = 512 };
 
 	chat_message()
@@ -77,14 +77,8 @@ public:
 
 	void encode_header()
 	{
-		char magic[magic_length + 1] = "";
-		sprintf(magic, "%08x", chat_message::DefaultMagic);
-		memcpy(data_, magic, magic_length);
-
-
-		char header[header_length - magic_length + 1] = "";
-		sprintf_s(header, "%4d", static_cast<int>(body_length_));
-		memcpy(data_ + magic_length, header, header_length - magic_length);
+		memcpy(data_, &chat_message::DefaultMagic, magic_length);
+		memcpy(data_ + magic_length, &body_length_, payload_length);
 	}
 
 	uint32_t toUint(char(&buffer)[4], size_t x)
@@ -101,6 +95,14 @@ public:
 
 	template<typename T>
 	T Parse(const char(&buf)[5])
+	{
+		T val;
+		std::memcpy(&val, buf, 4);
+		return val;
+	}
+
+	template<typename T>
+	T Serialize(void* data, size_t num)
 	{
 		T val;
 		std::memcpy(&val, buf, 4);

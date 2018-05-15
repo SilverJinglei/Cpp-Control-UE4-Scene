@@ -151,13 +151,25 @@ int main(int argc, char* argv[])
 		std::thread t([&io_context]() { io_context.run(); });
 
 		char line[chat_message::max_body_length + 1];
+
+		int msgId = 1;
+		std::ostringstream ostr;
+		std::string raw_message;
+
 		while (std::cin.getline(line, chat_message::max_body_length + 1))
 		{
+			ostr << msgId << ":" << line;
+			raw_message = ostr.str();
+
 			chat_message msg;
-			msg.body_length(std::strlen(line));
-			std::memcpy(msg.body(), line, msg.body_length());
+			
+			msg.body_length(raw_message.length());
+			std::memcpy(msg.body(), raw_message.c_str(), msg.body_length());
 			msg.encode_header();
 			c.write(msg);
+
+			msgId++;
+			ostr.str("");
 		}
 
 		c.close();

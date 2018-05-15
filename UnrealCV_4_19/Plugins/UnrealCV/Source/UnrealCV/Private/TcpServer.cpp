@@ -15,32 +15,32 @@ bool FSocketMessageHeader::WrapAndSendPayload(const TArray<uint8>& Payload, FSoc
 	Ar.Append(Payload);
 
 	int32 TotalAmountSent = 0; // How many bytes have been sent
-    int32 AmountToSend = Ar.Num();
-    int NumTrial = 100; // Only try a limited amount of times
-    // int ChunkSize = 4096;
-    while (AmountToSend > 0)
-    {
-        int AmountSent = 0;
-        // GetData returns a uint8 pointer
-        Socket->Send(Ar.GetData() + TotalAmountSent, Ar.Num() - TotalAmountSent, AmountSent);
-        NumTrial--;
+	int32 AmountToSend = Ar.Num();
+	int NumTrial = 100; // Only try a limited amount of times
+						// int ChunkSize = 4096;
+	while (AmountToSend > 0)
+	{
+		int AmountSent = 0;
+		// GetData returns a uint8 pointer
+		Socket->Send(Ar.GetData() + TotalAmountSent, Ar.Num() - TotalAmountSent, AmountSent);
+		NumTrial--;
 
-        if (AmountSent == -1)
-        {
-            continue;
-        }
+		if (AmountSent == -1)
+		{
+			continue;
+		}
 
-        if (NumTrial < 0)
-        {
-            UE_LOG(LogUnrealCV, Error, TEXT("Unable to send. Expect to send %d, sent %d"), Ar.Num(), TotalAmountSent);
-            return false;
-        }
+		if (NumTrial < 0)
+		{
+			UE_LOG(LogUnrealCV, Error, TEXT("Unable to send. Expect to send %d, sent %d"), Ar.Num(), TotalAmountSent);
+			return false;
+		}
 
-        UE_LOG(LogUnrealCV, Verbose, TEXT("Sending bytes %d/%d, sent %d"), TotalAmountSent, Ar.Num(), AmountSent);
-        AmountToSend -= AmountSent;
-        TotalAmountSent += AmountSent;
-    }
-    check(AmountToSend == 0);
+		UE_LOG(LogUnrealCV, Verbose, TEXT("Sending bytes %d/%d, sent %d"), TotalAmountSent, Ar.Num(), AmountSent);
+		AmountToSend -= AmountSent;
+		TotalAmountSent += AmountSent;
+	}
+	check(AmountToSend == 0);
 	return true;
 }
 
@@ -95,9 +95,9 @@ bool SocketReceiveAll(FSocket* Socket, uint8* Result, int32 ExpectedSize, bool* 
 
 		const TCHAR* LastErrorMsg = ISocketSubsystem::Get()->GetSocketError(LastError);
 		UE_LOG(LogUnrealCV, Error, TEXT("Unexpected error of socket happend, error %s"), LastErrorMsg);
-    if (unknown_error != nullptr) {
-      *unknown_error = true;
-    }
+		if (unknown_error != nullptr) {
+			*unknown_error = true;
+		}
 		return false;
 	}
 	return true;
@@ -109,8 +109,6 @@ bool FSocketMessageHeader::ReceivePayload(FArrayReader& OutPayload, FSocket* Soc
 	TArray<uint8> HeaderBytes;
 	int32 Size = sizeof(FSocketMessageHeader);
 	HeaderBytes.AddZeroed(Size);
-
-	UE_LOG(LogUnrealCV, Error, TEXT("payload Coming"));
 
 	if (!SocketReceiveAll(Socket, HeaderBytes.GetData(), Size, unknown_error))
 	{
@@ -130,9 +128,6 @@ bool FSocketMessageHeader::ReceivePayload(FArrayReader& OutPayload, FSocket* Soc
 		return false;
 	}
 
-	UE_LOG(LogUnrealCV, Error, TEXT("Good network header magic"));
-
-
 	uint32 PayloadSize;
 	Reader << PayloadSize;
 	if (!PayloadSize)
@@ -140,8 +135,6 @@ bool FSocketMessageHeader::ReceivePayload(FArrayReader& OutPayload, FSocket* Soc
 		UE_LOG(LogUnrealCV, Error, TEXT("Empty payload"));
 		return false;
 	}
-
-	UE_LOG(LogUnrealCV, Error, TEXT("Good payload"));
 
 	int32 PayloadOffset = OutPayload.AddUninitialized(PayloadSize);
 	OutPayload.Seek(PayloadOffset);
@@ -190,13 +183,6 @@ bool UNetworkManager::StartEchoService(FSocket* ClientSocket, const FIPv4Endpoin
 		// ClientSocket->SetNonBlocking(false); // When this in blocking state, I can not use this socket to send message back
 		ConnectionSocket = ClientSocket;
 
-
-		FString Confirm = FString::Printf(TEXT("connected to %s"), *GetProjectName());
-		bool IsSent = this->SendMessage(Confirm); // Send a hello message
-
-
-		UE_LOG(LogUnrealCV, Error, TEXT("Good to send welcome message to client."));
-
 		// Listening data here or start a new thread for data?
 		// Reuse the TCP Listener thread for getting data, only support one connection
 		uint32 BufferSize = 1024;
@@ -210,8 +196,8 @@ bool UNetworkManager::StartEchoService(FSocket* ClientSocket, const FIPv4Endpoin
 
 			// if (!RecvStatus) // The connection is broken
 			if (Read == 0)
-			// RecvStatus == true if Read >= 0, this is used to determine client disconnection
-			// -1 means no data, 0 means disconnected
+				// RecvStatus == true if Read >= 0, this is used to determine client disconnection
+				// -1 means no data, 0 means disconnected
 			{
 				ConnectionSocket = NULL; // Use this to determine whether client is connected
 				return false;
@@ -226,9 +212,9 @@ bool UNetworkManager::StartEchoService(FSocket* ClientSocket, const FIPv4Endpoin
 }
 
 /**
-  * Start message service in listening thread
-  * TODO: Start a new background thread to receive message
-  */
+* Start message service in listening thread
+* TODO: Start a new background thread to receive message
+*/
 bool UNetworkManager::StartMessageService(FSocket* ClientSocket, const FIPv4Endpoint& ClientEndpoint)
 {
 	if (!this->ConnectionSocket)
@@ -248,13 +234,13 @@ bool UNetworkManager::StartMessageService(FSocket* ClientSocket, const FIPv4Endp
 		while (this->ConnectionSocket) // Listening thread, while the client is still connected
 		{
 			FArrayReader ArrayReader;
-      bool unknown_error = false;
+			bool unknown_error = false;
 			if (!FSocketMessageHeader::ReceivePayload(ArrayReader, ConnectionSocket, &unknown_error))
 				// Wait forever until got a message, or return false when error happened
 			{
-        if (unknown_error) {
-          BroadcastError(FString("ReceivePayload failed with unknown error"));
-        }
+				if (unknown_error) {
+					BroadcastError(FString("ReceivePayload failed with unknown error"));
+				}
 				this->ConnectionSocket = NULL;
 				return false; // false will release the ClientSocket
 				break; // Remote socket disconnected
@@ -280,8 +266,8 @@ bool UNetworkManager::Connected(FSocket* ClientSocket, const FIPv4Endpoint& Clie
 {
 	bool ServiceStatus = false;
 	BroadcastConnected(*ClientEndpoint.ToString());
-	ServiceStatus = StartEchoService(ClientSocket, ClientEndpoint);
-	//ServiceStatus = StartMessageService(ClientSocket, ClientEndpoint);
+	// ServiceStatus = StartEchoService(ClientSocket, ClientEndpoint);
+	ServiceStatus = StartMessageService(ClientSocket, ClientEndpoint);
 	return ServiceStatus;
 	// This is a blocking service, if need to support multiple connections, consider start a new thread here.
 }
@@ -310,7 +296,7 @@ bool UNetworkManager::Start(int32 InPortNum) // Restart the server if configurat
 	FIPv4Endpoint Endpoint(IPAddress, PortNum);
 
 	FSocket* ServerSocket = FTcpSocketBuilder(TEXT("FTcpListener server")) // TODO: Need to realease this socket
-		// .AsReusable()
+																		   // .AsReusable()
 		.BoundToEndpoint(Endpoint)
 		.Listening(8);
 
@@ -350,9 +336,9 @@ bool UNetworkManager::SendMessage(const FString& Message)
 	{
 		TArray<uint8> Payload;
 		BinaryArrayFromString(Message, Payload);
-		UE_LOG(LogUnrealCV, Log, TEXT("Send string message with size %d"), Payload.Num());
+		UE_LOG(LogUnrealCV, Verbose, TEXT("Send string message with size %d"), Payload.Num());
 		FSocketMessageHeader::WrapAndSendPayload(Payload, ConnectionSocket);
-		UE_LOG(LogUnrealCV, Log, TEXT("Payload sent"), Payload.Num());
+		UE_LOG(LogUnrealCV, Verbose, TEXT("Payload sent"), Payload.Num());
 		return true;
 	}
 	return false;
