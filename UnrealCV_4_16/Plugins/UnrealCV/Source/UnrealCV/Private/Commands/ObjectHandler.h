@@ -37,5 +37,5 @@ public:
 	/** Hide object */
 	FExecStatus HideObject(const TArray<FString>& Args);
 	
-	FExecStatus HelloWorld(const TArray<FString>& Args);
+	FExecStatus MotorRotate(const TArray<FString>& Args);
 };

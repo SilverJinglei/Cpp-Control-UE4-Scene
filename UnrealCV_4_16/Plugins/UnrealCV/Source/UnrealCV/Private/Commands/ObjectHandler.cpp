@@ -58,9 +58,9 @@ void FObjectCommandHandler::RegisterCommands()
 	Help = "Hide object";
 	CommandDispatcher->BindCommand(TEXT("vset /object/[str]/hide"), Cmd, Help);
 
-	Cmd = FDispatcherDelegate::CreateRaw(this, &FObjectCommandHandler::HelloWorld);
-	Help = "Print Hello World";
-	CommandDispatcher->BindCommand(TEXT("vget /object/helloworld"), Cmd, Help);
+	Cmd = FDispatcherDelegate::CreateRaw(this, &FObjectCommandHandler::MotorRotate);
+	Help = "Motor Rotation";
+	CommandDispatcher->BindCommand(TEXT("vget /object/[str] [float]"), Cmd, Help);
 
 }
 
@@ -252,6 +252,20 @@ FExecStatus FObjectCommandHandler::SetObjectRotation(const TArray<FString>& Args
 	return FExecStatus::InvalidArgument;
 }
 
+
+
+FExecStatus FObjectCommandHandler::MotorRotate(const TArray<FString>& Args)
+{
+	if (Args.Num() != 2)
+		return FExecStatus::InvalidArgument;
+
+
+	FString Msg;
+	Msg += "Hello World!";
+	return FExecStatus::OK(Msg);
+}
+
+
 FExecStatus GetObjectMobility(const TArray<FString>& Args)
 {
 	if (Args.Num() == 1)
@@ -309,11 +323,4 @@ FExecStatus FObjectCommandHandler::HideObject(const TArray<FString>& Args)
 		return FExecStatus::OK();
 	}
 	return FExecStatus::InvalidArgument;
-}
-
-FExecStatus FObjectCommandHandler::HelloWorld(const TArray<FString>& Args)
-{
-	FString Msg;
-	Msg += "Hello World!";
-	return FExecStatus::OK(Msg);
 }
