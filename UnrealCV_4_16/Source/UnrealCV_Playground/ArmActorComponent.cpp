@@ -72,7 +72,7 @@ void UArmActorComponent::TickComponent(
 	// 	++ActorItr;
 	// }
 	FRotator newRotation;
-
+	
 	newRotation = Joints[0]->GetActorRotation();
 	newRotation.Yaw += DeltaHeight * 20.0f;
 	Joints[0]->SetActorRotation(newRotation);
