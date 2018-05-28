@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "Motor.h"
 #include "RoboticActor.generated.h"
 
 UCLASS()
@@ -24,6 +25,9 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 	
-	UPROPERTY(EditAnywhere)
-	TArray<UStaticMeshComponent*> Motors;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Robot")
+	TArray<UMotor*> Motors;
+
+	UFUNCTION(BlueprintCallable, Category = "Robot")
+	void InsertMotor(RotationDir dir, UStaticMeshComponent* model);
 };
