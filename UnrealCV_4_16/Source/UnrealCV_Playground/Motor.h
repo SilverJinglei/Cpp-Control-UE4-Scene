@@ -12,7 +12,7 @@ enum RotationDir { Roll, Pitch, Yaw }; // { x, y, z } {Roll, Pitch, Yaw}
  *
  */
 UCLASS()
-class UNREALCV_API UMotor : public UObject
+class UNREALCV_PLAYGROUND_API UMotor : public UObject
 {
 	GENERATED_BODY()
 

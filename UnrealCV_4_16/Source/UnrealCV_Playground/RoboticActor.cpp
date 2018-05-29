@@ -1,6 +1,4 @@
 // Fill out your copyright notice in the Description page of Project Settings.
-
-#include "UnrealCVPrivate.h"
 #include "RoboticActor.h"
 
 
@@ -16,6 +14,8 @@ ARoboticActor::ARoboticActor()
 void ARoboticActor::BeginPlay()
 {
 	Super::BeginPlay();
+
+	Motors.Empty();
 }
 
 // Called every frame
@@ -23,13 +23,13 @@ void ARoboticActor::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	//if (Motors.Num() == 0)
-	//	return;
+	if (Motors.Num() == 0)
+		return;
 
-	//for (UMotor* m: Motors)
-	//{
-	//	m->Update(DeltaTime);
-	//}
+	for (UMotor* m: Motors)
+	{
+		m->Update(DeltaTime);
+	}
 }
 
 void ARoboticActor::InsertMotor(RotationDir dir, UStaticMeshComponent* model)

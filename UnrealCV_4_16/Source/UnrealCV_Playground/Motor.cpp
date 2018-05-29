@@ -1,10 +1,5 @@
 // Fill out your copyright notice in the Description page of Project Settings.
-
-#include "UnrealCVPrivate.h"
 #include "Motor.h"
-
-
-
 
 void UMotor::Init(RotationDir dir, UStaticMeshComponent* model)
 {
@@ -25,7 +20,7 @@ void UMotor::Update(float DeltaTime)
 
 	auto newRotation = FMath::RInterpTo(ModelComponent->RelativeRotation, _targetRotator, DeltaTime, _speed);
 
-	UE_LOG(LogUnrealCV, Log, TEXT("target=%s; current=%s; interp=%s"), *_targetRotator.ToString(), *ModelComponent->RelativeRotation.ToString(), *newRotation.ToString());
+	UE_LOG(LogTemp, Log, TEXT("target=%s; current=%s; interp=%s"), *_targetRotator.ToString(), *ModelComponent->RelativeRotation.ToString(), *newRotation.ToString());
 	ModelComponent->SetRelativeRotation(newRotation);
 }
 

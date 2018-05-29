@@ -8,7 +8,7 @@
 #include "RoboticActor.generated.h"
 
 UCLASS()
-class UNREALCV_API ARoboticActor : public AActor
+class UNREALCV_PLAYGROUND_API ARoboticActor : public AActor
 {
 	GENERATED_BODY()
 	
