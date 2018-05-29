@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
+#include "RoboticActor.h"
 #include "Engine/StaticMeshActor.h"
 #include "ArmActorComponent.generated.h"
 
@@ -26,6 +27,9 @@ public:
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
 	float RunningTime;
+
+	UPROPERTY(EditAnywhere, Category = "Damage")
+	ARoboticActor* ARoboticActor;
 
 	UPROPERTY(EditAnywhere, Category = "Damage")
 		int32 TotalDamage;
