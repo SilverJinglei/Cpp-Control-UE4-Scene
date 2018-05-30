@@ -17,8 +17,8 @@ void UMotor::Update(float DeltaTime)
 {
 	if (FMath::IsNearlyEqual(_targetDegrees, GetCurrentDegrees()))
 		return;
-
-	auto newRotation = FMath::RInterpTo(ModelComponent->RelativeRotation, _targetRotator, DeltaTime, _speed);
+	
+	auto newRotation = FMath::RInterpConstantTo(ModelComponent->RelativeRotation, _targetRotator, DeltaTime, _speed);
 
 	UE_LOG(LogTemp, Log, TEXT("target=%s; current=%s; interp=%s"), *_targetRotator.ToString(), *ModelComponent->RelativeRotation.ToString(), *newRotation.ToString());
 	ModelComponent->SetRelativeRotation(newRotation);

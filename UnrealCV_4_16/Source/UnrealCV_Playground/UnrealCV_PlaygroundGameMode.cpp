@@ -15,3 +15,9 @@ AUnrealCV_PlaygroundGameMode::AUnrealCV_PlaygroundGameMode()
 	// use our custom HUD class
 	HUDClass = AUnrealCV_PlaygroundHUD::StaticClass();
 }
+
+void AUnrealCV_PlaygroundGameMode::solname(FString _str, int32 _num)
+{
+	FString str = FString::Printf(TEXT("--- %s - %d"), *_str, _num);
+	UE_LOG(LogTemp, Warning, TEXT("--- %s - %d"), *_str, _num);
+}

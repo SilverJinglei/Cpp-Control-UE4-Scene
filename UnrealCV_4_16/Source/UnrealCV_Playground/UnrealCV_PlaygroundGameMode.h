@@ -13,6 +13,9 @@ class AUnrealCV_PlaygroundGameMode : public AGameModeBase
 
 public:
 	AUnrealCV_PlaygroundGameMode();
+
+	UFUNCTION(Exec)
+	virtual void solname(FString _str, int32 _num);
 };
 
 

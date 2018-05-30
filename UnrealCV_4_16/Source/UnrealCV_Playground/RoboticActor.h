@@ -28,6 +28,15 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Robot")
 	TArray<UMotor*> Motors;
 
+
+	UFUNCTION(BlueprintCallable, Category = "Robot")
+	UMotor* FindMotor(FName modelName);
+
 	UFUNCTION(BlueprintCallable, Category = "Robot")
 	void InsertMotor(RotationDir dir, UStaticMeshComponent* model);
+
+
+	UFUNCTION(Exec)
+	void Say();
+
 };

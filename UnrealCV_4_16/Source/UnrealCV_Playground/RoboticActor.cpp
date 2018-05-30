@@ -14,8 +14,6 @@ ARoboticActor::ARoboticActor()
 void ARoboticActor::BeginPlay()
 {
 	Super::BeginPlay();
-
-	Motors.Empty();
 }
 
 // Called every frame
@@ -32,11 +30,24 @@ void ARoboticActor::Tick(float DeltaTime)
 	}
 }
 
+UMotor* ARoboticActor::FindMotor(FName modelName)
+{
+	return *Motors.FindByPredicate([&modelName](const UMotor* m) {
+		return m->ModelComponent->GetFName().IsEqual(modelName);
+	});
+}
+
 void ARoboticActor::InsertMotor(RotationDir dir, UStaticMeshComponent* model)
 {
 	auto* m = NewObject<UMotor>();
 	m->Init(dir, model);
 
 	Motors.Add(m);
+
+	UE_LOG(LogTemp, Warning, TEXT("--- %s 's Motors Count:%d"), *GetFName().ToString(), Motors.Num());
 }
 
+void ARoboticActor::Say()
+{
+	UE_LOG(LogTemp, Warning, TEXT("name:%s, Say hello"), *GetFName().ToString());
+}
