@@ -11,6 +11,8 @@ void FAliasCommandHandler::RegisterCommands()
 	CommandDispatcher->BindCommand("vrun [str]", Cmd, Help);
 	CommandDispatcher->BindCommand("vrun [str] [str]", Cmd, Help);
 	CommandDispatcher->BindCommand("vrun [str] [str] [str]", Cmd, Help);
+	CommandDispatcher->BindCommand("vrun [str] [str] [str] [str]", Cmd, Help);
+	CommandDispatcher->BindCommand("vrun [str] [str] [str] [str] [str]", Cmd, Help);
 	// vexec ActorId FuncName Params
 	Help = "Run UE4 blueprint function";
 	Cmd = FDispatcherDelegate::CreateRaw(this, &FAliasCommandHandler::VExec);

@@ -32,9 +32,16 @@ void ARoboticActor::Tick(float DeltaTime)
 
 UMotor* ARoboticActor::FindMotor(FName modelName)
 {
+	UE_LOG(LogTemp, Warning, TEXT("--- %s 's Motors Count:%d"), *GetFName().ToString(), Motors.Num());
+
 	return *Motors.FindByPredicate([&modelName](const UMotor* m) {
 		return m->ModelComponent->GetFName().IsEqual(modelName);
 	});
+}
+
+UMotor* ARoboticActor::FindMotorByIndex(int modelIndex)
+{
+	return nullptr;
 }
 
 void ARoboticActor::InsertMotor(RotationDir dir, UStaticMeshComponent* model)

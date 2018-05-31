@@ -19,7 +19,7 @@ class UNREALCV_PLAYGROUND_API UMotor : public UObject
 public:
 	UMotor();
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Robot")
 	UStaticMeshComponent* ModelComponent;
 
 	UFUNCTION(BlueprintCallable, Category="Robot")

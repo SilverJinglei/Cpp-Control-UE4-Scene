@@ -31,6 +31,9 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Robot")
 	UMotor* FindMotor(FName modelName);
+	
+	UFUNCTION(BlueprintCallable, Category = "Robot")
+	UMotor* FindMotorByIndex(int modelIndex);
 
 	UFUNCTION(BlueprintCallable, Category = "Robot")
 	void InsertMotor(RotationDir dir, UStaticMeshComponent* model);
