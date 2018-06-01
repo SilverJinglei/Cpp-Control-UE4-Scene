@@ -15,18 +15,18 @@ using boost::asio::ip::tcp;
 
 typedef std::deque<chat_message> chat_message_queue;
 
-class chat_client
+class Terminal
 {
 public:
-	chat_client(boost::asio::io_context& io_context,
+	Terminal(boost::asio::io_context& io_context,
 		const tcp::resolver::results_type& endpoints)
 		: io_context_(io_context),
 		socket_(io_context)
 	{
 		do_connect(endpoints);
 	}
-
-	void write(const chat_message& msg)
+	
+	void Send(const chat_message& msg)
 	{
 		boost::asio::post(io_context_,
 			[this, msg]()
@@ -40,7 +40,7 @@ public:
 		});
 	}
 
-	void close()
+	void Close()
 	{
 		boost::asio::post(io_context_, [this]() { socket_.close(); });
 	}
@@ -124,56 +124,134 @@ private:
 	chat_message_queue write_msgs_;
 };
 
+class Station
+{
+public:
+
+	Station()
+	{
+		tcp::resolver resolver(io_context);
+		const auto endpoints = resolver.resolve("127.0.0.1", "9000");//(argv[1], argv[2]);
+		
+		InTerminal = new Terminal(io_context, endpoints);
+	}
+
+	~Station()
+	{
+		delete InTerminal;
+	}
+
+private:
+
+	boost::asio::io_context io_context;
+
+public:
+	Terminal* InTerminal;
+
+
+	void Launch()
+	{
+		std::thread t([this]() { io_context.run(); });
+	}
+
+	int msgId = 1;
+	std::ostringstream ostr;
+	std::string raw_message;
+
+	void InvokeRemote(std::string line) {
+		ostr << msgId << ":" << line;
+		raw_message = ostr.str();
+
+		chat_message msg;
+
+		msg.body_length(raw_message.length());
+		std::memcpy(msg.body(), raw_message.c_str(), msg.body_length());
+		msg.encode_header();
+		InTerminal->Send(msg);
+
+		msgId++;
+		ostr.str("");
+	}
+};
+
+class UE4Proxy
+{
+public:
+
+	UE4Proxy()
+	{
+		_station = new Station();
+
+		_station->Launch();
+	}
+
+	~UE4Proxy()
+	{
+		delete _station;
+	}
+
+public:
+	void vget(std::string cmd) {
+		_station->InvokeRemote("vget" + cmd);
+	}
+
+	void vset(std::string cmd) {
+		_station->InvokeRemote("vset" + cmd);
+	}
+
+
+	void vgetObjectRotation(std::string actor) {
+		auto cmd = R"(/Object/)" + actor + R"(/rotation)";
+
+		vget(cmd);
+	}
+
+
+	template<typename... T>
+	void vexec(std::string blueprintName, std::string methodName, T... args) {
+		
+	}
+
+	void vrun() {
+
+	}
+
+protected:
+	
+	Station * _station;
+private:
+};
+
+class RobotAPI
+{
+public:
+
+	RobotAPI()
+	{
+
+	}
+
+	~RobotAPI()
+	{
+
+	}
+
+public:
+	void MotorOnForDegrees(std::string robotId, int motorIndex, float degree, float speed)
+	{
+		_ue4->vexec(robotId, std::string("MotorOnForDegrees"), motorIndex, degree, speed);
+	}
+
+private:
+
+	UE4Proxy * _ue4;
+};
+
 int main(int argc, char* argv[])
 {
 	try
 	{
-		//if (argc != 3)
-		//{
-		//	std::cerr << "Usage: chat_client <host> <port>\n";
-		//	return 1;
-		//}
 
-		//char magic[chat_message::magic_length + 1] = "";
-		//sprintf(magic, "%4d", 0x1E2B83C1);
-		//sprintf(magic, "%16x", 0x9E2B83C1);
-		//sprintf(magic, "%08x", 0x9E2B83C1);
-		////auto aa = boost::lexical_cast<std::u32string>(0x9E2B83C1).size();
-		//sprintf(magic, "%08x", chat_message::DefaultMagic);
-
-
-		boost::asio::io_context io_context;
-
-		tcp::resolver resolver(io_context);
-		const auto endpoints = resolver.resolve("127.0.0.1", "9000");//(argv[1], argv[2]);
-		chat_client c(io_context, endpoints);
-
-		std::thread t([&io_context]() { io_context.run(); });
-
-		char line[chat_message::max_body_length + 1];
-
-		int msgId = 1;
-		std::ostringstream ostr;
-		std::string raw_message;
-
-		while (std::cin.getline(line, chat_message::max_body_length + 1))
-		{
-			ostr << msgId << ":" << line;
-			raw_message = ostr.str();
-
-			chat_message msg;
-			
-			msg.body_length(raw_message.length());
-			std::memcpy(msg.body(), raw_message.c_str(), msg.body_length());
-			msg.encode_header();
-			c.write(msg);
-
-			msgId++;
-			ostr.str("");
-		}
-
-		c.close();
-		t.join();
 	}
 	catch (std::exception& e)
 	{
