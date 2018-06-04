@@ -26,6 +26,11 @@ public:
 		do_connect(endpoints);
 	}
 	
+	~Terminal()
+	{
+		Close();
+	}
+
 	void Send(const chat_message& msg)
 	{
 		boost::asio::post(io_context_,
@@ -147,11 +152,14 @@ private:
 
 public:
 	Terminal* InTerminal;
-
+	std::thread* BackgroundWorker;
 
 	void Launch()
 	{
-		std::thread t([this]() { io_context.run(); });
+		BackgroundWorker = new std::thread([this]() { io_context.run(); });
+
+		BackgroundWorker->detach();
+		//t.join();
 	}
 
 	int msgId = 1;
@@ -172,6 +180,11 @@ public:
 		msgId++;
 		ostr.str("");
 	}
+
+	void Close()
+	{
+		InTerminal->Close();
+	}
 };
 
 class UE4Proxy
@@ -181,7 +194,6 @@ public:
 	UE4Proxy()
 	{
 		_station = new Station();
-
 		_station->Launch();
 	}
 
@@ -209,7 +221,14 @@ public:
 
 	template<typename... T>
 	void vexec(std::string blueprintName, std::string methodName, T... args) {
+
+		std::string cmd = "vexec ";
+		cmd.append(blueprintName);
+		cmd.append(methodName);
+
+
 		
+		_station->InvokeRemote( + blueprintName + " " + methodName)
 	}
 
 	void vrun() {
@@ -228,12 +247,12 @@ public:
 
 	RobotAPI()
 	{
-
+		_ue4 = new UE4Proxy();
 	}
 
 	~RobotAPI()
 	{
-
+		delete _ue4;
 	}
 
 public:
@@ -251,7 +270,29 @@ int main(int argc, char* argv[])
 {
 	try
 	{
+		RobotAPI robot;
+		std::this_thread::sleep_for(std::chrono::seconds(1));
 
+		robot.MotorOnForDegrees("KukaBP", 0, -180, 58);
+
+		char line[chat_message::max_body_length + 1];
+		std::cin.getline(line, chat_message::max_body_length + 1);
+
+		//char line[chat_message::max_body_length + 1];
+
+		//std::ostringstream ostr;
+		//std::string raw_message;
+
+		//Station s;
+		//s.Launch();
+
+		//while (std::cin.getline(line, chat_message::max_body_length + 1))
+		//{
+		//	s.InvokeRemote(line);
+		//}
+
+		//s.Close();
+		//s.BackgroundWorker->join();
 	}
 	catch (std::exception& e)
 	{
