@@ -24,7 +24,10 @@
     <ClInclude Include="targetver.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Ue4Message.h">
+    <ClInclude Include="example.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="UE4_Request.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

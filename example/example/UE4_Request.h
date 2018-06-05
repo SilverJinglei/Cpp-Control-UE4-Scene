@@ -4,7 +4,7 @@
 #include <cstdlib>
 #include <cstring>
 
-class chat_message
+class UE4_Request
 {
 public:
 
@@ -13,7 +13,7 @@ public:
 	enum { header_length = magic_length + payload_length };
 	enum { max_body_length = 512 };
 
-	chat_message()
+	UE4_Request()
 		: body_length_(0)
 	{
 	}
@@ -77,7 +77,7 @@ public:
 
 	void encode_header()
 	{
-		memcpy(data_, &chat_message::DefaultMagic, magic_length);
+		memcpy(data_, &UE4_Request::DefaultMagic, magic_length);
 		memcpy(data_ + magic_length, &body_length_, payload_length);
 	}
 
@@ -121,4 +121,4 @@ private:
 };
 
 
-uint32_t chat_message::DefaultMagic = 0x9E2B83C1;
+uint32_t UE4_Request::DefaultMagic = 0x9E2B83C1;

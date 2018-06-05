@@ -142,9 +142,10 @@
     <Text Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="example.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
-    <ClInclude Include="Ue4Message.h" />
+    <ClInclude Include="UE4_Request.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="example.cpp" />
